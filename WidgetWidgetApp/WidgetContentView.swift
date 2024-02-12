@@ -21,6 +21,8 @@ struct WidgetContentView: View {
                 Text(viewModel.quote.quote)
                     .font(.callout)
                     .foregroundColor(viewModel.quoteTextColor())
+                    .lineLimit(2)                        .truncationMode(.tail)
+                        .fixedSize(horizontal: false, vertical: true)
                     Spacer()
                 Text(viewModel.quote.author)
                     .font(.caption2)

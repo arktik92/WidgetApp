@@ -20,9 +20,37 @@ class QuoteViewModel: ObservableObject {
         quotes = load("Source.json")
         quote = displayQuote()
         day = displayDay()
+        setupDailyQuoteUpdate()
+        
+        NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(dateDidChange),
+                    name: .NSCalendarDayChanged,
+                    object: nil
+                )
     }
     
+    @objc func dateDidChange(notification: NSNotification) {
+            DispatchQueue.main.async {
+                self.day = self.displayDay()
+                self.quote = self.displayQuote()
+            }
+        }
+    
     // MARK: - Functions
+    private func setupDailyQuoteUpdate() {
+            // Configurez le timer pour se déclencher à minuit
+            let calendar = Calendar.current
+            let nextMidnight = calendar.nextDate(after: Date(), matching: DateComponents(hour: 0), matchingPolicy: .nextTime)!
+            let timeInterval = nextMidnight.timeIntervalSinceNow
+
+            // Lancer un timer qui se déclenche à minuit et qui se répète tous les jours
+            Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { [weak self] _ in
+                self?.day = self?.displayDay() ?? ""
+                self?.quote = self?.displayQuote() ?? Quote(quote: "Erreur", author: "")
+            }
+        }
+    
     func load(_ filename: String) -> [Quote] {
         let data: Data
         
@@ -121,4 +149,9 @@ class QuoteViewModel: ObservableObject {
         }
         return color
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
 }
